@@ -1,0 +1,40 @@
+Here are the docker instructions I use:
+Install WSL2
+Install nvidia drivers: https://docs.nvidia.com/cuda/wsl-user-guide/index.html - you only need device drivers no cuda developers libraries
+Install docker desktop for windows and use defaults
+Run this from windows cmd prompt: docker pull tensorflow/tensorflow:latest-gpu-jupyter  # pull latest release w/ GPU support and Jupyter
+Run this from cmd prompt: docker run -it -p 8888:8888 -p 6006:6006 --gpus all tensorflow/tensorflow:latest-gpu-jupyter # -rm option removes container after running, --gpus all gives access to gpu's, -p maps ports 8888 and 6006 from docker to windows
+-	This will create a new container with some random name
+from docker bash: python -m pip install tensorflow[and-cuda]
+
+When running after this first time, go to containers and see what name it was given, then just run that container from Docker, you don’t need to do it from the command prompt.  In the log messages when you start the container, you will see a hyper link to start the jupyter notebook.
+
+To get a bash prompt in the docker container shell:  docker exec -it serene_cerf bash
+To copy files to the container: docker cp <path> serene_cerf:<path>
+To copy files from the container: docker cp serene_cerf:<path> <path>
+Serene_cerf is the name of the container.  Substitute for your name.  Wildcards on the file names don’t work right, so do one file at a time or do it from WSL with the following:
+ls *.ipynb|while read line; do docker cp ./$line serene_cerf:/tf/comp4531; done
+
+More help if needed:
+CUDA DNN install: https://developer.nvidia.com/rdp/cudnn-download
+more CUDA notes: https://thegeeksdiary.com/2021/10/07/how-to-setup-tensorflow-with-gpu-support-in-windows-11/
+tensorflow latest docker: https://www.tensorflow.org/install/docker
+
+Once you have Docker working, you can use Docker with VSCode and get all the features of VScode like Git copilot AI and viewing variables.
+If you want to read/save all your files from the windows directories, you can just open them as normal and use the docker kernel.  If you need to read/write files from docker, do the following:
+
+Install the Docker plugins for VSCode.
+Click on the Docker icon on the left of VScode and then select the Docker contain that you have already started in Docker desktop.
+Then expland the directories (your things will be under /tf) and find your files.  Open the notebook.  When you run, it will ask you to select a kernel.
+Select already existing jupyter kernel, then paste the hyperlink from the Docker desktop container startup log into the window.  Hit enter again to confirm, then select python3 kernel.
+You can open files that are already on the container, but you can create new files.  You have to right click on the container, "attach visual studio code".
+	This opens a bash shell in a new window.  Go to the directory you want to create a new file, then "cat > newfile.ipynb".  Hit control-D to put an end of file into newfile.ipynb and stop the cat.
+	Now you can open an existing file, edit it and "save as" the new empty file you just created.  Convoluted way to get the job done, but it works.  Trying to save
+	as into a non-empty file throws an error as well as saving as a non-existant file name.  I don't know why.
+	
+To install an earlier version of Tensorflow: docker pull tensorflow/tensorflow:2.17.0-gpu-jupyter
+
+To install on windows without GPU, create a new environment in Anaconda.  Then run:
+pip install tensorflow==2.18
+If you use conda, it will isntall tensorflow 2.10.  Then use conda to install matplotlib and any other libraries you need.
+There is a directory in your windows home (/users/donda/.keras in my case) that has a keras backend option.  It should be tensorflow, not torch.
